@@ -18,8 +18,8 @@ class ResultManager(key:String) extends Serializable{
 
 
   //
-//  private val intervalSumResultManager=new IntervalSumResultManager()
-  private val intervalSumResultManager=new IntervalSumManager(key)
+  private val intervalSumResultManager=new IntervalSumResultManager()
+//  private val intervalSumResultManager=new IntervalSumManager(key)
   private val computeResultAssistSum=new ComputeResultAssistSum()
 
   //
