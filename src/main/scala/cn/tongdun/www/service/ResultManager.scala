@@ -18,17 +18,19 @@ class ResultManager(key:String) extends Serializable{
 
 
   //
-  private val intervalSumResultManager=new IntervalSumResultManager()
-//  private val intervalSumResultManager=new IntervalSumManager(key)
+//  private val intervalSumResultManager=new IntervalSumResultManager()
+  private val intervalSumResultManager=new IntervalSumManager(key)
   private val computeResultAssistSum=new ComputeResultAssistSum()
 
   //
-  private val intervalCountResultManager = new IntervalCountResultManager()
+//  private val intervalCountResultManager = new IntervalCountResultManager()
+  private val intervalCountResultManager = new IntervalCountManager(key)
   private val computeResultAssistCount=new ComputeResultAssistCount()
 
 
   //最小值
-  private val intervalMinResultManager = new IntervalMinResultManager()
+//  private val intervalMinResultManager = new IntervalMinResultManager()
+  private val intervalMinResultManager = new IntervalMinManager(key)
   private val computeResultAssistMin=new ComputeResultAssistMin()
 
   // 中位数
@@ -39,6 +41,10 @@ class ResultManager(key:String) extends Serializable{
   private val intervalStdFloatManager= new IntervalStdFloatManager()
   private val computeResultAssistStd = new ComputeResultAssistStd()
 
+  //最大值
+//  private val intervalMaxResultManager=new IntervalMaxResultManager()
+  private val intervalMaxResultManager=new IntervalMaxManager(key)
+  private val computeResultAssistMax=new ComputeResultAssistMax()
 
   private val timeQueue=new mutable.Queue[Long]
 
@@ -82,9 +88,9 @@ class ResultManager(key:String) extends Serializable{
 
   }
 
-  //最大值
-  private val intervalMaxResultManager=new IntervalMaxResultManager()
-  private val computeResultAssistMax=new ComputeResultAssistMax()
+
+
+
   def addResultMax(time:Long,dimension:Float): Unit ={
     timeQueue.enqueue(time)
     intervalMaxResultManager.addIntervalResult(time,dimension)

@@ -53,9 +53,20 @@ class IntervalSumManager(keys:String) extends  Serializable with IntervalResultM
   key=keys
 }
 
-class IntervalCountManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
+class IntervalCountManager(keys:String) extends  Serializable with IntervalResultManager[Int]{
   key=keys
 }
+
+class IntervalMaxManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
+
+key=keys
+}
+
+class IntervalMinManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
+ key=keys
+
+}
+
 
 object Test{
   def main(args: Array[String]) {
