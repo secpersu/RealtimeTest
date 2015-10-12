@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+           http://www.springframework.org/schema/aop     http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+           http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+       "
+	default-autowire="byName">
+
+	<!-- ================================== 引入配置文件 ====================================== -->
+	<context:property-placeholder location="classpath:properties/forseti.api.properties" ignore-unresolvable="true" />
+
+	<context:annotation-config />
+
+	<!-- ===================== 定义扫描根路径为cn.fraudmetrix.forseti，不使用默认的扫描方式 =================== -->
+	<context:component-scan base-package="cn.fraudmetrix.forseti.api.service" use-default-filters="false">
+		<!-- 扫描符合@Service @Repository的类 -->
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+
+
+	<!-- ===================== 定义扫描根路径为cn.fraudmetrix.forseti，不使用默认的扫描方式 =================== -->
+	<context:component-scan base-package="cn.fraudmetrix.forseti.api.statistic" use-default-filters="false">
+		<!-- 扫描符合@Service @Repository的类 -->
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Service" />
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+
+
+	<!-- ================================== AOP 拦截velocity执行 ====================================== -->
+	<aop:config>
+		<aop:aspect ref="ruleExecuteMonitor">
+			<aop:around method="monitor" pointcut="execution(* cn.fraudmetrix.forseti.biz.velocity.core.*.*(..))" />
+			<aop:around method="cacheResult" pointcut="execution(* cn.fraudmetrix.forseti.biz.velocity.core.*IVelocity.*(..))" />
+		</aop:aspect>
+		<aop:aspect ref="apiRequsetFilterMonitor">
+			<aop:around method="monitor"
+				pointcut="execution(boolean cn.fraudmetrix.forseti.api.service.filter.*ApiRequestFilter.chain(..))" />
+		</aop:aspect>
+		<aop:aspect ref="memcacheQueryMonitor">
+			<aop:around method="monitor"
+				pointcut="execution(* cn.fraudmetrix.forseti.biz.service.intf.*MemcachedService.get*(..))" />
+		</aop:aspect>
+		<aop:aspect ref="velocityReadMonitor">
+			<aop:around method="monitor"
+				pointcut="execution(* cn.fraudmetrix.forseti.biz.velocity.mgr.intf.*IVelocityReadManager.getTransactionsByDimension(..))" />
+			<aop:around method="monitorReadFromDatabase"
+				pointcut="execution(* cn.fraudmetrix.forseti.biz.velocity.mgr.intf.*VelocityReader.getTransactionsByDimension(..))" />
+		</aop:aspect>
+		<aop:aspect ref="fingerPrintMonitor">
+			<aop:around method="monitor"
+				pointcut="execution(* cn.fraudmetrix.forseti.biz.service.intf.*DeviceDubboService.getFingerprint(..))"/>
+		</aop:aspect>
+		<aop:aspect  ref="bioDetectMonitor">
+			<aop:around method="monitor"
+				pointcut="execution(* cn.fraudmetrix.forseti.biz.service.common.*BiodetectApiInvoker.imageCheck(..))"/>
+		</aop:aspect>
+	</aop:config>
+
+	<bean id="apiConfig" class="cn.fraudmetrix.forseti.api.service.ApiConfig">
+		<property name="deployDir" value="${app.deploy.home}" />
+		<!-- 设备指纹调用开关，1为开，0为关 -->
+		<property name="fpSwitch" value="${forseti.api.fp.switch}" />
+		<!-- 设备指纹协议 -->
+		<property name="fpProtocal" value="${forseti.fp.protocal}" />
+		<!-- 设备指纹主机域名 -->
+		<property name="fpHost" value="${forseti.fp.host}" />
+		<!-- 设备指纹调用URL，多台机器的URL用逗号分隔 -->
+		<property name="fpUri" value="${forseti.fp.uri}" />
+		<property name="requestTimeout" value="${forseti.api.request.timeout}" />
+	</bean>
+
+
+	<!-- ================================== localCache 配置 ====================================== -->
+	<bean id="localCache" class="cn.fraudmetrix.forseti.api.storage.LocalCache" init-method="init">
+		<!-- 重新加载数据的时间间隔，单位为秒，默认为3600秒 -->
+		<property name="refreshTime" value="${forseti.api.localcache.refresh.time}" />
+	</bean>
+
+
+    <!-- ================================== eventStoreService 配置 ====================================== -->
+
+    <bean id="eventStoreService" class="cn.fraudmetrix.forseti.api.service.impl.EventStoreServiceImpl" init-method="init"
+		depends-on="proxyIpConfig">
+		<property name="timeInterval" value="${forseti.api.store.time.interval}" /><!-- 
+			定时写入head和tail数据的时间间隔，单位为秒，默认为60 -->
+		<property name="cachePath" value="${forseti.api.store.cache.path}" /><!--数据量超过内存限制时，保存到磁盘的路径 -->
+		<property name="cacheSize" value="${forseti.api.store.cache.size}" /><!-- 
+			直接在内存缓存的大小，单位为K，默认为1024K -->
+		<property name="alarmThreshold" value="${forseti.api.store.alarm.threshold}" /><!--本地队列堆积报警你阈值 -->
+	</bean>
+
+
+	<bean id="riskService" class="cn.fraudmetrix.forseti.api.service.impl.RiskServiceImpl" init-method="init" />
+
+	<bean id="locationService" class="cn.fraudmetrix.forseti.api.service.impl.LocationServiceImpl" />
+
+	<bean id="applicationInit" class="cn.fraudmetrix.forseti.api.util.ApplicationInit" init-method="init"
+		depends-on="systemConfigLoader" />
+	<!-- <bean id="customListDataInit" class="cn.fraudmetrix.forseti.api.util.CustomListDataInit" init-method="init"
+		depends-on="adminListDataService"/> -->
+
+	<bean id="ruleExecuteMonitor" class="cn.fraudmetrix.forseti.api.aop.RuleExecuteMonitor"></bean>
+
+	<bean id="apiRequsetFilterMonitor" class="cn.fraudmetrix.forseti.api.aop.ApiRequestFilterMonitor"></bean>
+
+	<bean id="memcacheQueryMonitor" class="cn.fraudmetrix.forseti.api.aop.MemcacheQueryMonitor"></bean>
+
+	<bean id="velocityReadMonitor" class="cn.fraudmetrix.forseti.api.aop.VelocityReadMonitor"></bean>
+	
+	<bean id="localQueueMonitor" class="cn.fraudmetrix.forseti.api.aop.PersistableLocalQueueMonitor" init-method="init"></bean>
+	
+	<bean id="fingerPrintMonitor" class="cn.fraudmetrix.forseti.api.aop.FingerPrintMointor"></bean>
+	
+	<bean id="bioDetectMonitor" class="cn.fraudmetrix.forseti.api.aop.BioDetectMonitor"></bean>
+
+	<!-- ================================== 流量 配置 ====================================== -->
+	<bean id="flowChargeController" class="cn.fraudmetrix.forseti.api.flowcharge.FlowChargeController" />
+	<bean id="partnerFlowChargeInfoCache" class="cn.fraudmetrix.forseti.biz.service.common.PartnerFlowChargeInfoCache"
+		init-method="init" destroy-method="destroy" />
+
+	<!-- ================================== JMX暴露监控 ====================================== -->
+	<bean id="jmxApiService" class=" cn.fraudmetrix.forseti.api.jmx.JmxApiServicelmpl" scope="singleton"/>
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter" 
+        lazy-init="false"> 
+        <property name="beans"> 
+            <map> 
+                <entry key="bean:name=JmxApi" value-ref="JmxApi" /> 
+            </map>    
+        </property> 
+    </bean>
+    <bean id="JmxApi" class="cn.fraudmetrix.forseti.api.object.JmxApi" />
+    <!-- ================================== JMX定时器 ====================================== -->
+    <bean id="jmxTimer" class="cn.fraudmetrix.forseti.api.jmx.JmxTimer" init-method="init"/>
+	<!-- ================================== kafka生产者 配置 ====================================== -->
+	<bean id="activityMQProduceService" class="cn.fraudmetrix.forseti.api.service.impl.ActivityMQProduceServiceImpl" init-method="init" destroy-method="destroy">
+		<property name="enabled" value="${kafka.enabled}" />
+		<property name="topic" value="${kafka.activity.topic}" />
+		<property name="metadataBrokerList" value="${kafka.metadata.broker.list}" />
+		<property name="producerType" value="${kafka.producer.type}" />
+		<property name="requestRequiredAcks" value="${kafka.request.required.acks}" />
+		<property name="compressionCodec" value="${kafka.compression.codec}" />
+		<property name="batchNumMessages" value="${kafka.batch.num.messages}" />
+	</bean>
+	
+	<!-- ================================== velocity kafka生产者 配置 ====================================== -->
+	<bean id="velocityMQProduceService" class="cn.fraudmetrix.forseti.api.service.impl.VelocityMQProduceServiceImpl" init-method="init" destroy-method="destroy">
+		<property name="enabled" value="${kafka.enabled}" />
+		<property name="topic" value="${kafka.velocity.topic}" />
+		<property name="metadataBrokerList" value="${kafka.metadata.broker.list}" />
+		<property name="producerType" value="${kafka.producer.type}" />
+		<property name="requestRequiredAcks" value="${kafka.request.required.acks}" />
+		<property name="compressionCodec" value="${kafka.compression.codec}" />
+		<property name="batchNumMessages" value="${kafka.batch.num.messages}" />
+	</bean>
+</beans>

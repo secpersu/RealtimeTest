@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.springframework.org/schema/beans"
+    xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+           http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd"
+	default-autowire="byName">
+
+    <context:property-placeholder
+            location="classpath:properties/riskbase.properties"
+            ignore-unresolvable="true" />
+
+	<bean id="districtQueryService"
+		class="cn.fraudmetrix.module.riskbase.service.impl.DistrictQueryServiceImpl"
+		init-method="init" />
+	
+	<bean id="geoipQueryService"
+		class="cn.fraudmetrix.module.riskbase.service.impl.GeoipQueryServiceImpl"
+		init-method="init" />
+	
+	<bean id="idInfoQueryService"
+		class="cn.fraudmetrix.module.riskbase.service.impl.IdInfoQueryServiceImpl"
+		init-method="init" />
+	
+	<bean id="mobileInfoQueryService"
+		class="cn.fraudmetrix.module.riskbase.service.impl.MobileInfoQueryServiceImpl"
+		init-method="init" />
+	
+	<bean id="binInfoQueryService"
+		class="cn.fraudmetrix.module.riskbase.service.impl.BinInfoQueryServiceImpl"
+		init-method="init" />
+	
+    <!-- redis -->
+	<bean id="redisClient" class="cn.fraudmetrix.module.riskbase.client.RedisClient"
+		init-method="init">
+		<property name="masterServer" value="${redis.master.server}" />
+		<property name="slaveServer" value="${redis.slave.server}" />
+	</bean>
+	<bean id="redisMSService" class="cn.fraudmetrix.module.riskbase.service.impl.RedisServiceImpl" />
+		
+	<bean id="evidenceRedisClient" class="cn.fraudmetrix.module.riskbase.client.RedisClient" init-method="init">
+		<property name="masterServer" value="${evidence.redis.master.server}" />
+		<property name="slaveServer" value="${evidence.redis.slave.server}"/>
+	</bean>
+    <bean id="greyListCacheService" class="cn.fraudmetrix.module.riskbase.service.impl.GreyListRedisCacheServiceImpl"/>
+    <bean id="greyListService" class="cn.fraudmetrix.module.riskbase.service.impl.GreyListServiceImpl"/>
+	
+	<bean id="p2PDiscreditQueryService" class="cn.fraudmetrix.module.riskbase.service.impl.P2PDiscreditQueryServiceImpl"
+		init-method="init" />
+		
+	<bean id="blackListCache" class="cn.fraudmetrix.module.riskbase.cache.BlackListCache"/>
+    <bean id="blackListCache2" class="cn.fraudmetrix.module.riskbase.cache.BlackListCacheInRedis"/>
+	<bean id="blackListService" class="cn.fraudmetrix.module.riskbase.service.impl.BlackListServiceImpl" />
+    <bean id="creditQueryService" class="cn.fraudmetrix.module.riskbase.service.impl.CreditQueryServiceImpl"
+          init-method="init"/>
+    <bean id="courtQueryService" class="cn.fraudmetrix.module.riskbase.service.impl.CourtQueryServiceImpl"/>
+	<bean id="associateInfoQueryService" class="cn.fraudmetrix.module.riskbase.service.impl.AssociateInfoQueryServiceImpl" />
+
+</beans>

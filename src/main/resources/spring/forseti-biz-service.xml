@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+						http://www.springframework.org/schema/context
+       					http://www.springframework.org/schema/context/spring-context-3.2.xsd
+						http://www.springframework.org/schema/tx
+           				http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+			            http://www.springframework.org/schema/aop 
+			            http://www.springframework.org/schema/aop/spring-aop-3.2.xsd"
+	default-autowire="byName">
+	<!-- xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+    http://code.alibabatech.com/schema/dubbo
+	http://code.alibabatech.com/schema/dubbo/dubbo.xsd -->
+	<!-- ================================== 引入配置文件 ====================================== -->
+	<context:property-placeholder
+			location="classpath:properties/forseti.biz.service.properties"
+			ignore-unresolvable="true" />
+
+	<context:annotation-config />
+
+	<!--<bean id="policyService" class="cn.fraudmetrix.forseti.biz.service.impl.PolicySetServiceImpl">-->
+
+
+	<!--</bean>-->
+	<!--<bean id="httpNoticerService" class="cn.fraudmetrix.forseti.biz.service.impl.HttpNoticerServiceImpl">-->
+
+	<!-- -->
+	<!--</bean>-->
+	<!--<bean id="adminSystemService" class="cn.fraudmetrix.forseti.biz.service.impl.AdminSystemServiceImpl">-->
+
+	<!--</bean>-->
+
+	<!--<bean id="adminListCustomService" class="cn.fraudmetrix.forseti.biz.service.impl.AdminListCustomServiceImpl">-->
+
+	<!--</bean>-->
+	<!-- ===================== 定义扫描根路径为，不使用默认的扫描方式 =================== -->
+	<context:component-scan base-package="cn.fraudmetrix.forseti.biz.service"
+							use-default-filters="false" >
+		<!-- 扫描符合@Service @Repository的类 -->
+		<context:include-filter type="annotation"
+								expression="org.springframework.stereotype.Service" />
+		<context:include-filter type="annotation"
+								expression="org.springframework.stereotype.Repository" />
+	</context:component-scan>
+
+	<!--<bean id="searchService" class="cn.fraudmetrix.module.elasticsearch.basic.SearchService">-->
+
+	<!--</bean>-->
+
+
+	<!-- ================================ adminLocalCache 配置 ==================================== -->
+	<bean id="adminLocalCache"
+		  class="cn.fraudmetrix.forseti.biz.service.common.AdminLocalCache"
+		  init-method="init">
+		<!-- 重新加载数据的时间间隔，单位为秒，默认为3600秒 -->
+		<property name="refreshTime" value="${forseti.localcache.refresh.time}" />
+	</bean>
+
+	<!-- ================================ ehcache 配置 ==================================== -->
+	<bean id="ehcacheUtil" class="cn.fraudmetrix.forseti.biz.service.cache.EHcacheUtil" />
+
+	<!-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> START memcached 配置 >>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
+	<bean id="memcachedClient" class="cn.fraudmetrix.forseti.biz.service.impl.ForsetiMemcachedClientFactoryBean"
+		  lazy-init="true">
+		<property name="servers" value="${memcache.server.list}" />
+		<property name="transcoder">
+			<bean class="net.spy.memcached.transcoders.SerializingTranscoder">
+				<property name="compressionThreshold" value="${memcache.compress.threshold}" />
+			</bean>
+		</property>
+		<property name="opTimeout" value="${memcache.operation.timeout}" />
+		<property name="maxThreadCount" value="${memcache.thread.count.max}" />
+		<property name="timeoutExceptionThreshold" value="${memcache.exception.timeout}" />
+
+		<!--  property name="hashAlg" value="${memcache.hash.algorithm}" / -->
+		<property name="locatorType" value="${memcache.locator.type}" />
+		<property name="failureMode" value="${memcache.failure.mode}" />
+		<property name="useNagleAlgorithm" value="${memcache.use.nagle.algorithm}" />
+	</bean>
+
+	<bean id="evidenceMemcachedClient" class="cn.fraudmetrix.forseti.biz.service.impl.ForsetiMemcachedClientFactoryBean"
+		  lazy-init="true">
+		<property name="servers" value="${evidence.memcache.server.list}" />
+		<property name="transcoder">
+			<bean class="net.spy.memcached.transcoders.SerializingTranscoder">
+				<property name="compressionThreshold" value="${evidence.memcache.compress.threshold}" />
+			</bean>
+		</property>
+		<property name="protocol" value="${evidence.memcache.protocol}" />
+		<property name="opTimeout" value="${evidence.memcache.operation.timeout}" />
+		<property name="maxThreadCount" value="${evidence.memcache.thread.count.max}" />
+		<property name="timeoutExceptionThreshold" value="${evidence.memcache.exception.timeout}" />
+
+		<!-- property name="hashAlg" value="${memcache.hash.algorithm}" / -->
+		<property name="locatorType" value="${evidence.memcache.locator.type}" />
+		<property name="failureMode" value="${evidence.memcache.failure.mode}" />
+		<property name="useNagleAlgorithm" value="${evidence.memcache.use.nagle.algorithm}" />
+	</bean>
+
+	<bean id="memcachedService"
+		  class="cn.fraudmetrix.forseti.biz.service.impl.MemcachedServiceImpl">
+		<property name="enabled" value="${memcache.enabled}" />
+	</bean>
+	<!-- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END memcached 配置 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<< -->
+
+	<!-- ================================== 代理IP 配置 ====================================== -->
+	<bean id="proxyIpConfig" class="cn.fraudmetrix.forseti.biz.service.common.ProxyIpConfig">
+		<!-- 通知单个ip扫描url -->
+		<property name="noticeIpUrl" value="${forseti.proxyip.notice.url}" />
+		<!-- 获取批量代理ip的url -->
+		<property name="listIpUrl" value="${forseti.proxyip.list.url}" />
+	</bean>
+
+	<!-- ================================== login 集成风险决策服务 配置 ====================================== -->
+	<bean id="forsetiApiHelper"
+		  class="cn.fraudmetrix.forseti.biz.service.common.ForsetiApiHelper">
+		<property name="bdHost" value="${forseti.login.risk.service.bd.host}" />
+		<property name="fpHost" value="${forseti.login.risk.service.fp.host}" />
+		<property name="fpTcpHost" value="${forseti.login.risk.service.fp.tcp.host}" />
+		<property name="fpWsHost" value="${forseti.login.risk.service.fp.ws.host}" />
+		<property name="fpProtocol" value="${forseti.login.risk.service.fp.protocol}" />
+		<property name="fmJsHost" value="${forseti.login.risk.service.js.host}" />
+		<property name="apiUrl" value="${forseti.login.risk.service.api.url}" />
+		<property name="partner" value="${forseti.login.risk.service.partner.code}" />
+		<property name="appname" value="${forseti.login.risk.service.app.name}" />
+		<property name="secret" value="${forseti.login.risk.service.secret.key}" />
+		<property name="bdLoginEventId" value="${forseti.login.risk.service.bd.event.id}" />
+		<property name="logEventId" value="${forseti.login.risk.service.log.event.id}" />
+	</bean>
+
+	<!-- ================================== biodetect engine 配置 ====================================== -->
+	<bean id="biodetectApiInvoker"
+		  class="cn.fraudmetrix.forseti.biz.service.common.BiodetectApiInvoker"
+		  init-method="init" destroy-method="destroy">
+		<property name="url" value="${forseti.velocity.bd.imgcheck}" />
+	</bean>
+
+
+
+
+
+
+
+
+
+
+	<!-- ================================== dubbo  配置 ====================================== -->
+	<!-- <dubbo:application name="forseti" /> -->
+
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+	<!-- <dubbo:registry address="multicast://224.5.6.7:1234" />
+		<dubbo:registry address="zookeeper://192.168.1.166:2181" />-->
+
+	<!-- 生成远程服务代理，可以像使用本地bean一样使用demoService -->
+	<!-- <dubbo:reference id="queryService" interface="cn.fraudmetrix.forseti.fp.dubbo.intf.QueryService"
+		url="${dubbo.server.list}" check="false"/> -->
+
+	<!-- <dubbo:reference id="monitorQueryService" interface="cn.fraudmetrix.forseti.fp.dubbo.intf.MonitorQueryService"
+		url="${dubbo.server.list}" check="false"/> -->
+
+	<!-- <dubbo:reference id="recentAccessQuery" interface="cn.fraudmetrix.forseti.fp.dubbo.intf.RecentAccessQuery"
+		url="${dubbo.server.list}" check="false"/> -->
+
+	<!-- <dubbo:reference id="deviceDbQuery" interface="cn.fraudmetrix.forseti.fp.dubbo.intf.DeviceDbQuery"
+		url="${dubbo.server.list}" check="false"/> -->
+</beans>

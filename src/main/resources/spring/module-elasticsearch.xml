@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+           http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+       ">
+
+    <context:component-scan base-package="cn.fraudmetrix.module.elasticsearch"/>
+
+    <!--
+    下面这段代码请拷到最外层maven project中：
+
+    <context:property-placeholder
+            location="classpath:properties/module-elasticsearch.properties" ignore-unresolvable="true"/>
+
+    <bean id="elasticSearchConfig" class="cn.fraudmetrix.module.elasticsearch.basic.ElasticSearchConfig">
+        <property name="clusterName" value="${forseti.elasticsearch.clusterName}"/>
+        <property name="hostList" value="${forseti.elasticsearch.hostList}"/>
+        <property name="indexReadPrefix" value="${forseti.elasticsearch.indexReadPrefix}"/>
+        <property name="indexWritePrefix" value="${forseti.elasticsearch.indexWritePrefix}"/>
+        <property name="indexPrefix" value="${forseti.elasticsearch.indexPrefix}"/>
+    </bean>
+
+    <bean id="wuzeiSearchConfig" class="cn.fraudmetrix.module.elasticsearch.basic.ElasticSearchConfig">
+        <property name="clusterName" value="${forseti.wuzeisearch.clusterName}"/>
+        <property name="hostList" value="${forseti.wuzeisearch.hostList}"/>
+        <property name="indexName" value="${forseti.wuzeisearch.index}"/>
+    </bean>
+
+    <bean id="elasticSearchBackupConfig" class="cn.fraudmetrix.module.elasticsearch.basic.ElasticSearchConfig">
+        <property name="clusterName" value="${forseti.elasticsearch.backup.clusterName}"/>
+        <property name="hostList" value="${forseti.elasticsearch.backup.hostList}"/>
+        <property name="indexReadPrefix" value="${forseti.elasticsearch.backup.indexReadPrefix}"/>
+        <property name="indexWritePrefix" value="${forseti.elasticsearch.backup.indexWritePrefix}"/>
+        <property name="indexPrefix" value="${forseti.elasticsearch.backup.indexPrefix}"/>
+    </bean>
+    -->
+
+</beans>

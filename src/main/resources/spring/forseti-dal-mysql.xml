@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+						http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+						http://www.springframework.org/schema/context
+       					http://www.springframework.org/schema/context/spring-context-3.2.xsd
+						http://www.springframework.org/schema/tx
+           				http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+			            http://www.springframework.org/schema/aop 
+			            http://www.springframework.org/schema/aop/spring-aop-3.2.xsd"
+	default-autowire="byName">
+
+	<!-- ================================== 引入配置文件 ====================================== -->
+	<context:property-placeholder
+		location="classpath:properties/forseti.dal.mysql.properties"
+		ignore-unresolvable="true" />
+
+	<!-- ================================== 系统参数定义 ====================================== -->
+	<bean id="systemConfigLoader"
+		class="cn.fraudmetrix.forseti.dal.mysql.util.SystemConfigLoader">
+		<property name="forsetiApiIpPrefix" value="${forseti.api.ip.prefix}" />
+		<property name="forsetiApiServerPort" value="${app.port}" />
+		<property name="forsetiDubboServerList" value="${dubbo.server.list}" />
+        <property name="deployEnvironment" value="${forseti.deploy.environment}" />
+		<!--excel文件目录 -->
+		<property name="excelDownDirectory" value="${forseti.excel.directory}" />
+	</bean>
+
+
+
+	<!-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> START DataSource定义 配置 >>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
+	<!-- ================================== proxyFilters ====================================== -->
+	<bean id="stat-filter" class="com.alibaba.druid.filter.stat.StatFilter">
+		<property name="slowSqlMillis" value="${forseti.database.slowsql.time}" />
+		<property name="logSlowSql" value="true" />
+	</bean>
+
+	<!-- ================================== 数据源bean ====================================== -->
+	<bean id="forsetiDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<!-- 基本属性 url、user、password -->
+		<property name="driverClassName" value="${forseti.database.driver}" />
+		<property name="url" value="${forseti.database.url}" />
+		<property name="username" value="${forseti.database.username}" />
+		<property name="password" value="${forseti.database.password}" />
+		<property name="defaultAutoCommit" value="false" />
+
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="${forseti.database.initialSize}" />
+		<property name="minIdle" value="1" />
+		<property name="maxActive" value="${forseti.database.maxActive}" />
+
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="60000" />
+
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+
+		<!--<property name="validationQuery" value="SELECT 'x'" /> -->
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<property name="poolPreparedStatements" value="true" />
+		<property name="maxPoolPreparedStatementPerConnectionSize"
+			value="20" />
+
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="stat,slf4j" />
+
+		<property name="proxyFilters">
+			<list>
+				<ref bean="stat-filter" />
+			</list>
+		</property>
+	</bean>
+	<!-- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END DataSource定义 配置 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<< -->
+
+
+	<!-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> START DAO定义 配置 >>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
+	<bean id="forsetiSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation"
+			value="classpath:mybatis/forseti-mysql-sqlmap-config.xml" />
+		<property name="mapperLocations" value="classpath*:mybatis/mapper/*.xml" />
+		<property name="typeAliasesPackage" value="cn.fraudmetrix.forseti.dal.mysql.object" />
+		<property name="dataSource" ref="forsetiDataSource" />
+	</bean>
+
+	<bean name="forsetiMapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="cn.fraudmetrix.forseti.dal.mysql.dao" />
+		<property name="sqlSessionFactoryBeanName" value="forsetiSqlSessionFactory" />
+	</bean>
+	<!-- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END DAO定义 配置 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< -->
+
+
+
+
+
+	<!-- >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> START 事务 配置 >>>>>>>>>>>>>>>>>>>>>>>>>>>> -->
+	<!-- forseti的Ibatis事务管理器 -->
+	<bean id="forsetiTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="forsetiDataSource" />
+	</bean>
+
+	<!-- 事务属性，方法以此开头的需要进行事务控制 -->
+	<bean id="txAttributeSource"
+		class="org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource">
+		<property name="properties">
+			<props>
+				<prop key="update*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="modify*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="insert*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="save*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="create*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="delete*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="remove*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="move*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="post*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="repost*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="disable*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="reorder*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="recover*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="repost*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="freeze*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="unfreeze*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="add*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="replace*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="register*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="bind*">PROPAGATION_REQUIRED,-RollbackableException</prop>
+				<prop key="newTransactionWrapper">PROPAGATION_REQUIRES_NEW,-RollbackableException
+				</prop>
+			</props>
+		</property>
+	</bean>
+
+
+
+	<!-- 事务拦截器 -->
+	<bean id="forsetiTxInterceptor"
+		class="org.springframework.transaction.interceptor.TransactionInterceptor">
+		<property name="transactionManager" ref="forsetiTransactionManager" />
+		<property name="transactionAttributeSource" ref="txAttributeSource" />
+	</bean>
+
+	<!-- 为匹配的Bean自动创建代理 -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+		<property name="beanNames">
+			<list>
+				<value>*Service</value>
+				<value>velocityManager</value>
+			</list>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>forsetiTxInterceptor</value>
+			</list>
+		</property>
+	</bean>
+	<!-- <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< END 事务 配置 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< -->
+
+
+	<!-- ================================ FpMonitorConfig 配置 ==================================== -->
+	<bean id="fpMonitorConfig" class="cn.fraudmetrix.forseti.dal.mysql.util.FpMonitorConfig">
+		<property name="fpSwitch" value="${forseti.fpMonitor.switch}" /> <!-- 设备指纹调用开关，1为开，0为关 -->
+		<property name="fpMonitorUri" value="${forseti.fpMonitor.uri}" /> <!-- 设备指纹调用URL，多台机器的URL用逗号分隔 -->
+	</bean>
+
+</beans>
