@@ -301,23 +301,23 @@ class ResultManager(key:String) extends Serializable{
           resultDistinctCountAssist.substractAssist(jsonStr)
         case "sum"=>
          val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistSum.substractAssist(outSum)
+          computeResultAssistSum.substractAssist(outSum.toFloat)
 
         case "count"=>
           val outCount=intervalCountResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistCount.substractAssist(outCount)
+          computeResultAssistCount.substractAssist(outCount.toInt)
 
         case "max"=>
           val outMax=intervalMaxResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistMax.substractAssist(outMax)
+          computeResultAssistMax.substractAssist(outMax.toFloat)
         case "min"=>
           val outMin=intervalMinResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistMin.substractAssist(outMin)
+          computeResultAssistMin.substractAssist(outMin.toFloat)
         case "avg"=>
           val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistSum.substractAssist(outSum)
+          computeResultAssistSum.substractAssist(outSum.toFloat)
           val outCount=intervalCountResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistCount.substractAssist(outCount)
+          computeResultAssistCount.substractAssist(outCount.toInt)
         case "median"=>
          val outMedian= intervalMedianFloatManager.subtractIntervalResult(timeQueue.front)
           computeResultAssistMedian.substractAssist(outMedian)
@@ -326,9 +326,9 @@ class ResultManager(key:String) extends Serializable{
          val outStd= intervalStdFloatManager.subtractIntervalResult(timeQueue.front)
           computeResultAssistStd.substractAssist(outStd)
           val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistSum.substractAssist(outSum)
+          computeResultAssistSum.substractAssist(outSum.toFloat)
           val outCount=intervalCountResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistCount.substractAssist(outCount)
+          computeResultAssistCount.substractAssist(outCount.toInt)
         case _=>
       }
       timeQueue.dequeue()
@@ -336,15 +336,15 @@ class ResultManager(key:String) extends Serializable{
 
   }
 
-  def substractResultStd(): Unit ={
-    val outStd= intervalStdFloatManager.subtractIntervalResult(timeQueue.front)
-    computeResultAssistStd.substractAssist(outStd)
-    val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
-    computeResultAssistSum.substractAssist(outSum)
-    val outCount=intervalCountResultManager.subtractIntervalResult(timeQueue.front)
-    computeResultAssistCount.substractAssist(outCount)
-    timeQueue.dequeue()
-  }
+//  def substractResultStd(): Unit ={
+//    val outStd= intervalStdFloatManager.subtractIntervalResult(timeQueue.front)
+//    computeResultAssistStd.substractAssist(outStd)
+//    val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
+//    computeResultAssistSum.substractAssist(outSum)
+//    val outCount=intervalCountResultManager.subtractIntervalResult(timeQueue.front)
+//    computeResultAssistCount.substractAssist(outCount)
+//    timeQueue.dequeue()
+//  }
   def computeResult(computeType:String): Any ={
     computeType match{
       case "distinctcount"=>
