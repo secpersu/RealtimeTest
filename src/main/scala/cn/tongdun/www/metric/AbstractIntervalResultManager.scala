@@ -60,7 +60,7 @@ trait IntervalResultManager[T] {
      clients.withClient{client=>
        val dimensionstr=client.hget(key,outTime).get
        val dimensions=dimensionstr.split(",")
-       if(dimensions.size==0){
+       if(dimensions.size==1){
          client.hdel(key,outTime)
          dimensionstr.asInstanceOf[T]
        }
