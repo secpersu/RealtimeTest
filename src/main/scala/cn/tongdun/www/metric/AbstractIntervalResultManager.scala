@@ -100,14 +100,16 @@ trait IntervalHashMapManager{
     var result=""
     clients.withClient{client=>
       client.hget(key,outTime) match{
+        case None=>
+          println(outTime)
         case Some(dimensionstr)=>
-          val dimensions=dimensionstr.split(",")
+          val dimensions=dimensionstr.split("\\|")
           if(dimensions.size==1){
             client.hdel(key,outTime)
             result=dimensions.head
           }
           else {
-            client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString(","))
+            client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString("|"))
             result=dimensions.head
           }
       }
@@ -115,11 +117,9 @@ trait IntervalHashMapManager{
     strToMap(result)
   }
 def strToMap(dimension:String): mutable.Map[String,Int] ={
-  val beginTime=System.currentTimeMillis()
+
   val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
-  val endTime=System.currentTimeMillis()
-  println((endTime-beginTime))
- new HashMap
+  json
 }
   def mapToStr(datas:HashMap[String,Int]): String ={
     JSONObject.toJSONString(mapAsJavaMap(datas),JSONStyle.MAX_COMPRESS)
@@ -135,7 +135,7 @@ def strToMap(dimension:String): mutable.Map[String,Int] ={
         case None=>
           client.hmset(key,Map(currTime->inputData))
         case Some(frev)=>
-          val newDimension=frev+","+inputData
+          val newDimension=frev+"|"+inputData
           client.hmset(key,Map(currTime->newDimension))
       }
     }
@@ -143,39 +143,39 @@ def strToMap(dimension:String): mutable.Map[String,Int] ={
 
 }
 
-//object TT{
-//   def main (args: Array[String]) {
+object TT{
+   def main (args: Array[String]) {
+
+     println("123|346|456".split("/|").slice(1,3).mkString("|"))
+//     val ye= new Ye
+//     println(ye.strToMap("{wenzhou:34,shanghai:33,hangzhou:37,jinghua:28}"))
+//     strToMap("{\"178.9\":\"6\"}")
+////     val hashMap=new HashMap[String,Int]
+////     hashMap.put("178.9",10)
+////     println(ye.strToMap("{\"178.9\":\"6\"}"))
+////     println(ye.strToMap("{\"178.9\":\"6\"}"))
+////     println(ye.mapToStr(hashMap))
+////
+////  }
+////  def strToMap(dimension:String):mutable.Map[Float,Int] ={
+////    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[Float,Int]])
+////    json
+////
+  }
+}
 //
-//
-//     val ye= new Ye[Float]
-////     strToMap("{\"178.9\":\"6\"}")
-//     val hashMap=new HashMap[String,Int]
-//     hashMap.put("178.9",10)
-//     println(ye.strToMap("{\"178.9\":\"6\"}"))
-//     println(ye.strToMap("{\"178.9\":\"6\"}"))
-//     println(ye.mapToStr(hashMap))
-//
-//  }
-//  def strToMap(dimension:String):mutable.Map[Float,Int] ={
-//    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[Float,Int]])
-//    json
-//
-//  }
-//}
-//
-//class Ye[T]{
-//
-//  def strToMap(dimension:String): mutable.Map[String,Int] ={
-//    val beginTime=System.currentTimeMillis()
-//    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
-//    val endTime=System.currentTimeMillis()
-//    println((endTime-beginTime))
-//    json
-//  }
-//  def mapToStr(datas:HashMap[String,Int]): String ={
-//    JSONObject.toJSONString(mapAsJavaMap(datas),JSONStyle.MAX_COMPRESS)
-//
-//  }
-//}
+class Ye{
+
+  val jsonParser =new JSONParser()
+  def strToMap(dimension:String): mutable.Map[String,Int] ={
+
+    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
+    json
+  }
+  def mapToStr(datas:HashMap[String,Int]): String ={
+    JSONObject.toJSONString(mapAsJavaMap(datas),JSONStyle.MAX_COMPRESS)
+
+  }
+}
 
 

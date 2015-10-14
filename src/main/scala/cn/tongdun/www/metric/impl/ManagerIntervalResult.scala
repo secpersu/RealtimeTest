@@ -84,19 +84,27 @@ class IntervalStdManager(keys:String) extends  Serializable with IntervalHashMap
 
 object Test{
   def main(args: Array[String]) {
+
+//    "xx|xx".split("\\|").foreach(println(_))
     val distinct = new IntervalDistinctCountManager("distinct")
     var beginTime=System.currentTimeMillis()
     val hashMap=new HashMap[String,Int]
     hashMap.put("192.168",13)
-    distinct.addIntervalResult(123l,hashMap)
+//    distinct.addIntervalResult(123l,hashMap)
     var endTime=System.currentTimeMillis()
     println(endTime-beginTime)
 
-    beginTime=System.currentTimeMillis()
-    distinct.subtractIntervalResult(123l)
-    endTime=System.currentTimeMillis()
-    println("substract "+(endTime-beginTime))
 
+    distinct.addIntervalResult(123l,hashMap)
+    distinct.addIntervalResult(123l,hashMap)
+    distinct.subtractIntervalResult(123l)
+
+//
+//    beginTime=System.currentTimeMillis()
+//    distinct.subtractIntervalResult(123l)
+//    endTime=System.currentTimeMillis()
+//    println("substract "+(endTime-beginTime))
+//
 
 
 
