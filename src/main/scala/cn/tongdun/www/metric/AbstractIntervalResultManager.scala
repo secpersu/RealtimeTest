@@ -99,15 +99,17 @@ trait IntervalHashMapManager{
   def subtractIntervalResult(outTime:Long):mutable.Map[String,Int]={
     var result=""
     clients.withClient{client=>
-      val dimensionstr=client.hget(key,outTime).get
-      val dimensions=dimensionstr.split(",")
-      if(dimensions.size==1){
-        client.hdel(key,outTime)
-        result=dimensions.head
-      }
-      else {
-        client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString(","))
-        result=dimensions.head
+      client.hget(key,outTime) match{
+        case dimensionstr=>
+          val dimensions=dimensionstr.split(",")
+          if(dimensions.size==1){
+            client.hdel(key,outTime)
+            result=dimensions.head
+          }
+          else {
+            client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString(","))
+            result=dimensions.head
+          }
       }
     }
     strToMap(result)
