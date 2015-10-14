@@ -12,10 +12,10 @@ class ComputeResultAssistStd   extends Serializable with  Logging{
 
   private val dimensionNum=new mutable.HashMap[Float,Int]()
 
-  def substractAssist(dimensions:mutable.HashMap[Float,Int]): Unit ={
+  def substractAssist(dimensions:mutable.Map[String,Int]): Unit ={
 
-    dimensions.foreach {case (dimension:Float,oldNum:Int)=>
-      dimensionNum.get(dimension) match {
+    dimensions.foreach {case (dimension:String,oldNum:Int)=>
+      dimensionNum.get(dimension.toFloat) match {
         case None =>
         //此处需要报警
         case Some(num) =>
@@ -23,11 +23,11 @@ class ComputeResultAssistStd   extends Serializable with  Logging{
 
           val newNum = num - oldNum
           if (newNum == 0) {
-            dimensionNum.remove(dimension)
+            dimensionNum.remove(dimension.toFloat)
 
           }
           else {
-            dimensionNum.put(dimension, newNum)//如果该dimension还存在
+            dimensionNum.put(dimension.toFloat, newNum)//如果该dimension还存在
           }
 
       }
@@ -35,18 +35,18 @@ class ComputeResultAssistStd   extends Serializable with  Logging{
 
   }
 
-  def addAssist(dimensions:mutable.HashMap[Float,Int]): Unit ={
+  def addAssist(dimensions:mutable.HashMap[String,Int]): Unit ={
 
-    dimensions.foreach {case (dimension:Float,newNum:Int)=>
-      dimensionNum.get(dimension) match {
+    dimensions.foreach {case (dimension:String,newNum:Int)=>
+      dimensionNum.get(dimension.toFloat) match {
         case None =>
-          if (dimension != null && !dimension.toString.equals("")) {
-            dimensionNum.put(dimension, newNum)
+          if (dimension != null && !dimension.equals("")) {
+            dimensionNum.put(dimension.toFloat, newNum)
             //            result = 1 //如果该dimension不存在,说明添加新的不同dimension,返回 1
           }
         case Some(num) =>
           val updateNum = num + newNum
-          dimensionNum.put(dimension, updateNum)
+          dimensionNum.put(dimension.toFloat, updateNum)
       }
     }
   }

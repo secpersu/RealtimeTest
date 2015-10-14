@@ -12,9 +12,9 @@ class ComputeResultAssistMedian extends Serializable with  Logging{
 
   private var dimesionNumMap=new TreeMap[Float,Int]()
 
-  def substractAssist(dimensions:mutable.HashMap[Float,Int]): Unit ={
-    dimensions.foreach {case (dimension:Float,oldNum:Int)=>
-      dimesionNumMap.get(dimension) match {
+  def substractAssist(dimensions:mutable.Map[String,Int]): Unit ={
+    dimensions.foreach {case (dimension:String,oldNum:Int)=>
+      dimesionNumMap.get(dimension.toFloat) match {
         case None =>
         //此处需要报警
         case Some(num) =>
@@ -22,27 +22,27 @@ class ComputeResultAssistMedian extends Serializable with  Logging{
 
           val newNum = num - oldNum
           if (newNum == 0) {
-            dimesionNumMap=dimesionNumMap.-(dimension)
+            dimesionNumMap=dimesionNumMap.-(dimension.toFloat)
           }
           else {
-            dimesionNumMap=dimesionNumMap.+((dimension,newNum))
+            dimesionNumMap=dimesionNumMap.+((dimension.toFloat,newNum))
           }
 
       }
     }
   }
 
-  def addAssist(dimensions:mutable.HashMap[Float,Int]): Unit ={
-    dimensions.foreach {case (dimension:Float,newNum:Int)=>
-      dimesionNumMap.get(dimension) match {
+  def addAssist(dimensions:mutable.Map[String,Int]): Unit ={
+    dimensions.foreach {case (dimension:String,newNum:Int)=>
+      dimesionNumMap.get(dimension.toFloat) match {
         case None =>
-          if (dimension != null && !dimension.toString.equals("")) {
-            dimesionNumMap=dimesionNumMap.+((dimension,newNum))
+          if (dimension != null && !dimension.equals("")) {
+            dimesionNumMap=dimesionNumMap.+((dimension.toFloat,newNum))
             //            result = 1 //如果该dimension不存在,说明添加新的不同dimension,返回 1
           }
         case Some(num) =>
           val updateNum = num + newNum
-          dimesionNumMap=dimesionNumMap.+((dimension,updateNum))
+          dimesionNumMap=dimesionNumMap.+((dimension.toFloat,updateNum))
 
       }
     }

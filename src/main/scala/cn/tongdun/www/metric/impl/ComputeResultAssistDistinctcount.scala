@@ -10,7 +10,7 @@ class ResultAssistDistinctCount extends Serializable{
 
   private val dimensionNum=new mutable.HashMap[String,Int]()
 
-  def substractAssist(dimensions:mutable.HashMap[String,Int]): Unit ={
+  def substractAssist(dimensions:mutable.Map[String,Int]): Unit ={
 
     dimensions.foreach {case (dimension:String,oldNum:Int)=>
       dimensionNum.get(dimension) match {

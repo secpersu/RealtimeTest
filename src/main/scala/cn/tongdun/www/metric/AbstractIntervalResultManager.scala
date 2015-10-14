@@ -1,9 +1,14 @@
 package cn.tongdun.www.metric
 
+import net.minidev.json.{JSONStyle, JSONValue, JSONObject}
 import org.apache.spark.Logging
 
-
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
+import scala.StringBuilder
+import scala.collection.mutable
 import scala.collection.mutable.{HashMap, MutableList}
+import cn.tongdun.www.function.Utils._
 
 /**
  * Created by wangqiaoshi on 15/7/29.
@@ -53,8 +58,6 @@ trait IntervalResultManager[T] {
   var key=""
 
   def subtractIntervalResult(outTime:Long): String={
-
-
     var result=""
      clients.withClient{client=>
        client.hget(key,outTime) match {
@@ -66,7 +69,6 @@ trait IntervalResultManager[T] {
              result=dimensions.head
            }
            else {
-
              client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString(","))
              result=dimensions.head
            }
@@ -85,6 +87,90 @@ trait IntervalResultManager[T] {
           client.hmset(key,Map(currTime->newDimension))
       }
     }
+  }
+}
+
+
+trait IntervalHashMapManager{
+  var key=""
+
+  def subtractIntervalResult(outTime:Long):mutable.Map[String,Int]={
+    var result=""
+    clients.withClient{client=>
+      val dimensionstr=client.hget(key,outTime).get
+      val dimensions=dimensionstr.split(",")
+      if(dimensions.size==1){
+        client.hdel(key,outTime)
+        result=dimensions.head
+      }
+      else {
+        client.hset(key,outTime,dimensions.slice(1,dimensions.size).mkString(","))
+        result=dimensions.head
+      }
+    }
+    strToMap(result)
+  }
+def strToMap(dimension:String): mutable.Map[String,Int] ={
+  val beginTime=System.currentTimeMillis()
+  val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
+  val endTime=System.currentTimeMillis()
+  println((endTime-beginTime))
+ new HashMap
+}
+  def mapToStr(datas:HashMap[String,Int]): String ={
+    JSONObject.toJSONString(mapAsJavaMap(datas),JSONStyle.MAX_COMPRESS)
+
+  }
+
+
+//
+  def addIntervalResult(currTime:Long,dimension:HashMap[String,Int]): Unit={
+    val inputData=mapToStr(dimension)
+    clients.withClient{client=>
+      client.hget(key,currTime) match {
+        case None=>
+          client.hmset(key,Map(currTime->inputData))
+        case Some(frev)=>
+          val newDimension=frev+","+inputData
+          client.hmset(key,Map(currTime->newDimension))
+      }
+    }
+  }
+
+}
+
+object TT{
+   def main (args: Array[String]) {
+
+
+     val ye= new Ye[Float]
+//     strToMap("{\"178.9\":\"6\"}")
+     val hashMap=new HashMap[String,Int]
+     hashMap.put("178.9",10)
+     println(ye.strToMap("{\"178.9\":\"6\"}"))
+     println(ye.strToMap("{\"178.9\":\"6\"}"))
+     println(ye.mapToStr(hashMap))
+
+  }
+  def strToMap(dimension:String):mutable.Map[Float,Int] ={
+    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[Float,Int]])
+    json
+
+  }
+}
+
+class Ye[T]{
+
+  def strToMap(dimension:String): mutable.Map[String,Int] ={
+    val beginTime=System.currentTimeMillis()
+    val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
+    val endTime=System.currentTimeMillis()
+    println((endTime-beginTime))
+    json
+  }
+  def mapToStr(datas:HashMap[String,Int]): String ={
+    JSONObject.toJSONString(mapAsJavaMap(datas),JSONStyle.MAX_COMPRESS)
+
   }
 }
 

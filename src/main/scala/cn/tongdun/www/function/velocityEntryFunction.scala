@@ -42,12 +42,12 @@ object velocityEntryFunction {
 
     //.setMaster("local[4]").setAppName("ve")volecityRealTime
 
-    val sparkConf = new SparkConf().setAppName("ve")
-//    sparkConf.set("spark.cassandra.connection.host", "192.168.6.52")
-//    sparkConf.set("spark.serializer","org.apache.spark.serializer.KryoSerializer")
-//    sparkConf.set("spark.cassandra.output.batch.size.bytes","524288")
-//    sparkConf.set("spark.cassandra.connection.timeout_ms", sparkcassandraconnectionkeep_alive_ms.toString)
-//    sparkConf.set("spark.cassandra.connection.keep_alive_ms", sparkcassandraconnectionkeep_alive_ms.toString)
+    val sparkConf = new SparkConf().setAppName("ve").setMaster("local[4]")
+    sparkConf.set("spark.cassandra.connection.host", "192.168.6.52")
+    sparkConf.set("spark.serializer","org.apache.spark.serializer.KryoSerializer")
+    sparkConf.set("spark.cassandra.output.batch.size.bytes","524288")
+    sparkConf.set("spark.cassandra.connection.timeout_ms", sparkcassandraconnectionkeep_alive_ms.toString)
+    sparkConf.set("spark.cassandra.connection.keep_alive_ms", sparkcassandraconnectionkeep_alive_ms.toString)
 
     // Create the context with a 1 second batch size
     val ssc = new StreamingContext(sparkConf, Seconds(1))
@@ -131,13 +131,9 @@ object velocityEntryFunction {
 
   val updateResult = (iterable: Iterator[(String, Seq[( Long, Long, String)], Option[(ResultManager)])]) => {
 
-
-
     //获得是具体的某个指标,根据key得出是什么计算类型的
     val result=iterable.map { case (groupbyKey: String, newValues: Seq[( Long, Long, String)], nowvalue: Option[ResultManager]) =>
     {
-
-
       val keys=groupbyKey.split(",")
       val rules=keys(0).split(":")
       val computeFiledName=rules(1)

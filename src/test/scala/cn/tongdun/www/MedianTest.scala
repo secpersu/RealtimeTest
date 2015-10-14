@@ -29,20 +29,20 @@ object MedianTest {
 
   def main(args: Array[String]) {
 
-    val testObj= new ResultManager("xx")
-    testObj.rangTime=7776000
-    testObj.computeType="median"
-    while(true) {
-
-      val data=makeHashMap()
-      val beginTime=System.currentTimeMillis()
-      testObj.addResultMedian(data._1,data._2)
-      testObj.substractResult("median")
-      testObj.computeResult("median")
-      val endTime=System.currentTimeMillis()
-      println("spend time is "+(endTime-beginTime))
-      Thread.sleep(1000) //500ms发一次
-    }
+//    val testObj= new ResultManager("xx")
+//    testObj.rangTime=7776000
+//    testObj.computeType="median"
+//    while(true) {
+//
+//      val data=makeHashMap()
+//      val beginTime=System.currentTimeMillis()
+//      testObj.addResultMedian(data._1,data._2)
+//      testObj.substractResult("median")
+//      testObj.computeResult("median")
+//      val endTime=System.currentTimeMillis()
+//      println("spend time is "+(endTime-beginTime))
+//      Thread.sleep(1000) //500ms发一次
+//    }
   }
 
 }

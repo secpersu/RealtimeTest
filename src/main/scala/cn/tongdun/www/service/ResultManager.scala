@@ -14,7 +14,8 @@ import scala.collection.mutable.HashMap
 class ResultManager(key:String) extends Serializable{
 
   private val resultDistinctCountAssist=new ResultAssistDistinctCount()
-  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountResultStringManager()
+//  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountResultStringManager()
+  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountManager(key)
 
 
   //
@@ -34,11 +35,13 @@ class ResultManager(key:String) extends Serializable{
   private val computeResultAssistMin=new ComputeResultAssistMin()
 
   // 中位数
-  private val intervalMedianFloatManager = new IntervalMedianFloatManager()
+//  private val intervalMedianFloatManager = new IntervalMedianManager()
+  private val intervalMedianFloatManager = new IntervalMedianManager(key)
   private val computeResultAssistMedian = new ComputeResultAssistMedian()
 
   //均值
-  private val intervalStdFloatManager= new IntervalStdFloatManager()
+//  private val intervalStdFloatManager= new IntervalStdFloatManager()
+  private val intervalStdFloatManager=new IntervalStdManager(key)
   private val computeResultAssistStd = new ComputeResultAssistStd()
 
   //最大值
@@ -85,7 +88,6 @@ class ResultManager(key:String) extends Serializable{
     timeQueue.enqueue(time)
     intervalCountResultManager.addIntervalResult(time,dimension)
     computeResultAssistCount.addAssist(dimension)
-
   }
 
 
@@ -114,22 +116,21 @@ class ResultManager(key:String) extends Serializable{
 
   }
 
-  def addResultMedian(time:Long,dimensions:mutable.HashMap[Float,Int]): Unit ={
+  def addResultMedian(time:Long,dimensions:mutable.HashMap[String,Int]): Unit ={
     timeQueue.enqueue(time)
     intervalMedianFloatManager.addIntervalResult(time,dimensions)
     computeResultAssistMedian.addAssist(dimensions)
-
   }
 
-  def addResultStd(time:Long,dimensions:mutable.HashMap[Float,Int]): Unit ={
+  def addResultStd(time:Long,dimensions:mutable.HashMap[String,Int]): Unit ={
 
     timeQueue.enqueue(time)
     intervalStdFloatManager.addIntervalResult(time,dimensions)
     computeResultAssistStd.addAssist(dimensions)
     var sum=0f
     var count=0
-    dimensions.foreach { case (dimension: Float, newNum: Int) =>
-        sum=sum+dimension*newNum
+    dimensions.foreach { case (dimension: String, newNum: Int) =>
+        sum=sum+dimension.toFloat*newNum
         count=count+newNum
     }
 
@@ -179,7 +180,7 @@ class ResultManager(key:String) extends Serializable{
 
 
       case "median"=>
-        val newHashMap=new HashMap[Float,Int]()
+        val newHashMap=new HashMap[String,Int]()
 
         for (newvalue <- newValues) {
           inputBegintime = newvalue._1
@@ -187,15 +188,15 @@ class ResultManager(key:String) extends Serializable{
 
           jsonstrToMap (newvalue._3).foreach {
             case (dimension: String, newNum: String) => {
-              newHashMap.get (dimension.toFloat) match {
+              newHashMap.get (dimension) match {
                 case None =>
-                  if (dimension != null && ! dimension.toString.equals ("") ) {
-                    newHashMap.put (dimension.toFloat, newNum.toInt)
+                  if (dimension != null && ! dimension.equals ("") ) {
+                    newHashMap.put (dimension, newNum.toInt)
                     //            result = 1 //如果该dimension不存在,说明添加新的不同dimension,返回 1
                   }
                 case Some (num) =>
                   val updateNum = num + newNum.toInt
-                  newHashMap.put (dimension.toFloat, updateNum)
+                  newHashMap.put (dimension, updateNum)
               }
             }
 
@@ -255,7 +256,7 @@ class ResultManager(key:String) extends Serializable{
         addResultAvg(inputEndtime,allSum,allCount)
 
       case "std"=>
-        val newHashMap=new HashMap[Float,Int]()
+        val newHashMap=new HashMap[String,Int]()
 
         for (newvalue <- newValues) {
           inputBegintime = newvalue._1
@@ -263,15 +264,15 @@ class ResultManager(key:String) extends Serializable{
 
           jsonstrToMap(newvalue._3).foreach {
             case (dimension: String, newNum: String) => {
-              newHashMap.get(dimension.toFloat) match {
+              newHashMap.get(dimension) match {
                 case None =>
-                  if (dimension != null && !dimension.toString.equals("")) {
-                    newHashMap.put(dimension.toFloat, newNum.toInt)
+                  if (dimension != null && !dimension.equals("")) {
+                    newHashMap.put(dimension, newNum.toInt)
                     //            result = 1 //如果该dimension不存在,说明添加新的不同dimension,返回 1
                   }
                 case Some(num) =>
                   val updateNum = num + newNum.toInt
-                  newHashMap.put(dimension.toFloat, updateNum)
+                  newHashMap.put(dimension, updateNum)
               }
             }
 
@@ -396,10 +397,6 @@ object ResultManagerTest{
     jsonStr.put("wangqiaoshi",11)
     jsonStr.put("zhangshan",4)
     jsonStr.put("wangwu",6)
-
-
-
-
   }
 
 }

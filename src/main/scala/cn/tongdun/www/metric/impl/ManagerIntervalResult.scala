@@ -1,8 +1,9 @@
 package cn.tongdun.www.metric.impl
 
-import cn.tongdun.www.metric.{IntervalResultManager, AbstractIntervalResultManager}
+import cn.tongdun.www.metric.{IntervalResultManager, AbstractIntervalResultManager,IntervalHashMapManager}
 
-import scala.collection.mutable.HashMap
+import scala.collection.mutable
+import scala.collection.mutable.{HashMap,Map}
 
 
 /**
@@ -67,16 +68,37 @@ class IntervalMinManager(keys:String) extends  Serializable with IntervalResultM
 
 }
 
+class IntervalDistinctCountManager(keys:String) extends  Serializable with IntervalHashMapManager{
+
+ key=keys
+}
+class IntervalMedianManager(keys:String) extends  Serializable with IntervalHashMapManager{
+
+ key=keys
+}
+
+class IntervalStdManager(keys:String) extends  Serializable with IntervalHashMapManager{
+  key=keys
+
+}
 
 object Test{
   def main(args: Array[String]) {
-    val intervalTest=new IntervalTest("wang")
-
-    intervalTest.addIntervalResult(123L,78)
-
-    val beginTime=System.currentTimeMillis()
-    intervalTest.addIntervalResult(123L,78)
-    val endTime=System.currentTimeMillis()
+    val distinct = new IntervalDistinctCountManager("distinct")
+    var beginTime=System.currentTimeMillis()
+    val hashMap=new HashMap[String,Int]
+    hashMap.put("192.168",13)
+    distinct.addIntervalResult(123l,hashMap)
+    var endTime=System.currentTimeMillis()
     println(endTime-beginTime)
+
+    beginTime=System.currentTimeMillis()
+    distinct.subtractIntervalResult(123l)
+    endTime=System.currentTimeMillis()
+    println("substract "+(endTime-beginTime))
+
+
+
+
   }
 }
