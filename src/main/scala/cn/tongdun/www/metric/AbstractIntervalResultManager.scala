@@ -100,7 +100,7 @@ trait IntervalHashMapManager{
     var result=""
     clients.withClient{client=>
       client.hget(key,outTime) match{
-        case dimensionstr=>
+        case Some(dimensionstr)=>
           val dimensions=dimensionstr.split(",")
           if(dimensions.size==1){
             client.hdel(key,outTime)
