@@ -51,34 +51,34 @@ class IntervalTest(keys:String) extends  Serializable with IntervalResultManager
 
 
 class IntervalSumManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
-  key=keys
+  key=keys+",sum"
 }
 
 class IntervalCountManager(keys:String) extends  Serializable with IntervalResultManager[Int]{
-  key=keys
+  key=keys+",count"
 }
 
 class IntervalMaxManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
 
-key=keys
+key=keys+",max"
 }
 
 class IntervalMinManager(keys:String) extends  Serializable with IntervalResultManager[Float]{
- key=keys
+ key=keys+",min"
 
 }
 
 class IntervalDistinctCountManager(keys:String) extends  Serializable with IntervalHashMapManager{
 
- key=keys
+ key=keys+",distinct"
 }
 class IntervalMedianManager(keys:String) extends  Serializable with IntervalHashMapManager{
 
- key=keys
+ key=keys+",median"
 }
 
 class IntervalStdManager(keys:String) extends  Serializable with IntervalHashMapManager{
-  key=keys
+  key=keys+",std"
 
 }
 
