@@ -24,7 +24,7 @@ import scala.collection.JavaConversions._
 object Utils {
   val cassandraIp="192.168.6.55"
   val zooKeeperIps="192.168.6.55,192.168.6.56,192.168.6.57"
-  val jsonParser =new JSONParser()
+//  val jsonParser =new JSONParser()
   val jsonObj = new JSONObject();
 
 
@@ -103,9 +103,8 @@ object Utils {
   def parseToPolicyAndDataV2(jsonStrs:Iterator[(String,String)]): Iterator[(String,mutable.Map[String,String])] = {
 
 
-
     val resultList=new mutable.MutableList[(String,mutable.Map[String,String])]()
-
+    val jsonParser =new JSONParser()
     jsonStrs.flatMap{r=>
       val json: JSONObject = jsonParser.parse(r._2).asInstanceOf[JSONObject]
 
