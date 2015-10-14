@@ -49,7 +49,8 @@ class ResultManager(key:String) extends Serializable{
   private val intervalMaxResultManager=new IntervalMaxManager(key)
   private val computeResultAssistMax=new ComputeResultAssistMax()
 
-  private val timeQueue=new mutable.Queue[Long]
+//  private val timeQueue=new mutable.Queue[Long]
+  private val timeQueue=new TimeQueueManager(key)
 
 
   var rangTime:Long=0
@@ -61,6 +62,11 @@ class ResultManager(key:String) extends Serializable{
   var computeTime:Long=0
 
 
+  def setRangTime(rangTimes:Long): Unit ={
+    rangTime=rangTimes
+    timeQueue.timeRange=rangTimes
+
+  }
 
 
 
