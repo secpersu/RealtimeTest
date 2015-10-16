@@ -1,6 +1,7 @@
 package cn.tongdun.www.metric.impl
 
 import cn.tongdun.www.metric.{TimeSlice, IntervalResultManager, AbstractIntervalResultManager, IntervalHashMapManager}
+import cn.tongdun.www.service.TimeQueueManager
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, Map}
@@ -152,17 +153,36 @@ class TimeSliceCountManager(key:String,rangTime:Long) extends TimeSliceManager[I
 }
 
 
-class TimeSliceMaxManager(key:String,rangTime:Long) extends TimeSliceManager[Float](key,rangTime){
+class TimeSliceMaxManager(key:String,rangTime:Long) extends  TimeSliceHashManager(key,rangTime){
 
-  def  mergeTimeSlice():(Long,Float)={
+  def  mergeTimeSlice():(Long,HashMap[String, Int])={
+
+    val result = new HashMap[String, Int]
     var endTime=0l
-    var max=Float.MinValue
-    historyMap.foreach { case (time: Long, dimensions: mutable.MutableList[Float]) =>
+    historyMap.foreach { case (time: Long, dimensions: mutable.MutableList[Map[String, Int]]) =>
       if(endTime<time)
         endTime=time
-      dimensions.foreach(maxItem=>if(max<maxItem)max=maxItem)
+      mergeMap(result,dimensions)
     }
-    (endTime,max)
+    (endTime,result)
+  }
+
+
+
+  def mergeMap(result:HashMap[String, Int],dimensions: mutable.MutableList[Map[String, Int]]): Unit ={
+
+
+    for(dimension<-dimensions){
+      dimension.foreach{ case (key:String,resultNum:Int)=>
+        result.get(key) match {
+          case Some(num) =>
+            val newNum = num + resultNum
+            result.put(key, newNum)
+          case None =>
+            result.put(key, resultNum)
+        }
+      }
+    }
 
   }
 
@@ -170,19 +190,51 @@ class TimeSliceMaxManager(key:String,rangTime:Long) extends TimeSliceManager[Flo
 }
 
 
-class TimeSliceMinManager(key:String,rangTime:Long) extends TimeSliceManager[Float](key,rangTime){
+class TimeSliceMinManager(key:String,rangTime:Long) extends TimeSliceHashManager(key,rangTime){
 
-  def  mergeTimeSlice():(Long,Float)={
+//  def addIntervalResult(currTime:Long,dimension:Float): Unit ={
+//    if(check(currTime,addOp)){//先合并，在reids中增加
+//      super.addResult(currTime,dimension)
+//      val result=mergeTimeSlice()
+//      intervalManager.addIntervalResult(result._1,result._2)
+//      clear()
+//    }
+//    else{
+//      super.addResult(currTime,dimension)
+//    }
+//  }
+
+  def  mergeTimeSlice():(Long,HashMap[String, Int])={
+
+    val result = new HashMap[String, Int]
     var endTime=0l
-    var min=Float.MaxValue
-    historyMap.foreach { case (time: Long, dimensions: mutable.MutableList[Float]) =>
+    historyMap.foreach { case (time: Long, dimensions: mutable.MutableList[Map[String, Int]]) =>
       if(endTime<time)
         endTime=time
-        dimensions.foreach(minItem=>if(min>minItem)min=minItem)
+      mergeMap(result,dimensions)
     }
-    (endTime,min)
+    (endTime,result)
+  }
+
+
+
+  def mergeMap(result:HashMap[String, Int],dimensions: mutable.MutableList[Map[String, Int]]): Unit ={
+
+
+    for(dimension<-dimensions){
+      dimension.foreach{ case (key:String,resultNum:Int)=>
+        result.get(key) match {
+          case Some(num) =>
+            val newNum = num + resultNum
+            result.put(key, newNum)
+          case None =>
+            result.put(key, resultNum)
+        }
+      }
+    }
 
   }
+
 
 }
 
@@ -345,13 +397,28 @@ object Test{
 
 
 //
-//    val why = new TimeSliceSumManager("why,sum",86400l)
+    val why = new TimeSliceMinManager("why,min",86400l)
+    val timeQueue=new TimeQueueManager("why",86400l)
+    val computeResultAssistMin=new ComputeResultAssistMin()
+
 //
-//
-////    why.setTimeRange(86400l)
-//
-//    why.addIntervalResult(123l,123f)
-//    why.addIntervalResult(124l,123f)
+    timeQueue.enqueue(123l)
+    why.addIntervalResult(123l,mutable.Map("123"->1))
+    computeResultAssistMin.addAssist(123f)
+
+    timeQueue.enqueue(123l)
+    why.addIntervalResult(123l,mutable.Map("123"->1))
+    computeResultAssistMin.addAssist(123f)
+
+    timeQueue.enqueue(86400123l)
+    why.addIntervalResult(86400123l,mutable.Map("123"->1))
+    computeResultAssistMin.addAssist(123f)
+
+    val outMax=why.subtractIntervalResult(timeQueue.front)
+    computeResultAssistMin.substractAssist(outMax)
+    timeQueue.dequeue()
+
+
 //    why.addIntervalResult(125l,123f)
 //    why.addIntervalResult(86400123l,124f)
 //    why.addIntervalResult(86400124l,124f)
@@ -359,12 +426,10 @@ object Test{
 //
 //    why.subtractIntervalResult(86400123l)
 
-    val distinct = new TimeSliceDistinctManager("why,distinct",86400l)
-    distinct.addIntervalResult(123l,Map("192.168.6.1"->5,"192.168.6.2"->3))
-    distinct.addIntervalResult(123l,Map("192.168.47.4"->6,"192.168.6.1"->3))
-    distinct.addIntervalResult(1123l,Map("192.168.47.4"->6,"192.168.6.1"->3))
-
-
+//    val distinct = new TimeSliceDistinctManager("why,distinct",86400l)
+//    distinct.addIntervalResult(123l,Map("192.168.6.1"->5,"192.168.6.2"->3))
+//    distinct.addIntervalResult(123l,Map("192.168.47.4"->6,"192.168.6.1"->3))
+//    distinct.addIntervalResult(1123l,Map("192.168.47.4"->6,"192.168.6.1"->3))
 
 
 

@@ -109,13 +109,13 @@ class ResultManager(key:String,rangTime:Long) extends Serializable{
 
   def addResultMax(time:Long,dimension:Float): Unit ={
     timeQueue.enqueue(time)
-    intervalMaxResultManager.addIntervalResult(time,dimension)
+    intervalMaxResultManager.addIntervalResult(time,mutable.Map(dimension.toString->1))
     computeResultAssistMax.addAssist(dimension)
   }
 
   def addResultMin(time:Long,dimension:Float): Unit ={
     timeQueue.enqueue(time)
-    intervalMinResultManager.addIntervalResult(time,dimension)
+    intervalMinResultManager.addIntervalResult(time,mutable.Map(dimension.toString->1))
     computeResultAssistMin.addAssist(dimension)
   }
 
@@ -324,10 +324,10 @@ class ResultManager(key:String,rangTime:Long) extends Serializable{
 
         case "max"=>
           val outMax=intervalMaxResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistMax.substractAssist(outMax.toFloat)
+          computeResultAssistMax.substractAssist(outMax)
         case "min"=>
           val outMin=intervalMinResultManager.subtractIntervalResult(timeQueue.front)
-          computeResultAssistMin.substractAssist(outMin.toFloat)
+          computeResultAssistMin.substractAssist(outMin)
         case "avg"=>
           val outSum= intervalSumResultManager.subtractIntervalResult(timeQueue.front)
           computeResultAssistSum.substractAssist(outSum.toFloat)

@@ -3,6 +3,7 @@ package cn.tongdun.www.metric.impl
 import org.apache.spark.Logging
 
 import scala.collection.immutable.TreeMap
+import scala.collection.mutable
 
 /**
  * Created by wangqiaoshi on 15/9/8.
@@ -19,6 +20,24 @@ class ComputeResultAssistMin extends Serializable with  Logging {
     }
     else
       dimesionNumMap=dimesionNumMap.+((outMax,num))
+
+  }
+
+  def substractAssist(outMaxs:mutable.Map[String,Int]) ={
+
+
+    outMaxs.foreach{case (outMax:String,outNum:Int)=>
+
+      var num= dimesionNumMap.get(outMax.toFloat).get
+      num=num-outNum
+      if(num<=0){
+        dimesionNumMap=dimesionNumMap.-(outMax.toFloat)
+      }
+      else
+        dimesionNumMap=dimesionNumMap.+((outMax.toFloat,num))
+    }
+
+
 
   }
   def addAssist(prevMax:Float): Unit ={
