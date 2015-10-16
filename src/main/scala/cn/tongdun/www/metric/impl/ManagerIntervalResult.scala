@@ -212,6 +212,7 @@ class TimeSliceMinManager(key:String,rangTime:Long) extends TimeSliceHashManager
       if(endTime<time)
         endTime=time
       mergeMap(result,dimensions)
+
     }
     (endTime,result)
   }

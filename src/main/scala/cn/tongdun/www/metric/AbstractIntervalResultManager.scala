@@ -97,7 +97,7 @@ trait IntervalResultManager[T] {
 }
 
 
-trait IntervalHashMapManager{
+trait IntervalHashMapManager extends Logging{
   val jsonParser =new JSONParser()
   var key=""
 
@@ -123,6 +123,7 @@ trait IntervalHashMapManager{
   }
 def strToMap(dimension:String): mutable.Map[String,Int] ={
 
+  logInfo(s"-------------------------$dimension---------------------------")
   val json =  mapAsScalaMap(jsonParser.parse(dimension).asInstanceOf[java.util.HashMap[String,Int]])
   json
 }

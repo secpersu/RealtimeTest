@@ -37,8 +37,6 @@ class ComputeResultAssistMin extends Serializable with  Logging {
         dimesionNumMap=dimesionNumMap.+((outMax.toFloat,num))
     }
 
-
-
   }
   def addAssist(prevMax:Float): Unit ={
     dimesionNumMap.get(prevMax) match{
