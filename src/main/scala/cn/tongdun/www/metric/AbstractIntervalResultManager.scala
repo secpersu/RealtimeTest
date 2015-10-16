@@ -25,7 +25,7 @@ trait  AbstractIntervalResultManager[T] extends Logging{
     historyMap_
   }
 
-   def subtractIntervalResult(outTime:Long): T ={
+   def subtractResult(outTime:Long): T ={
      val dimensions = historyMap.get(outTime).get
      if(dimensions.size==1)historyMap.remove(outTime).get.head
      else{
@@ -37,7 +37,7 @@ trait  AbstractIntervalResultManager[T] extends Logging{
      }
    }
 //
-  def addIntervalResult(currTime:Long,dimension:T): Unit ={
+  def addResult(currTime:Long,dimension:T): Unit ={
   historyMap.get(currTime) match{
     case Some(dimensions)=>
       dimensions.+=(dimension)
@@ -54,6 +54,9 @@ trait  AbstractIntervalResultManager[T] extends Logging{
 
 }
 
+
+
+
 import cn.tongdun.www.redis.RedisConnector._
 trait IntervalResultManager[T] {
   var key=""
@@ -62,9 +65,11 @@ trait IntervalResultManager[T] {
     var result=""
      clients.withClient{client=>
        client.hget(key,outTime) match {
+         case None=>
+           println(outTime)
 
-         case dimensionstr=>
-           val dimensions=dimensionstr.get.split(",")
+         case Some(dimensionstr)=>
+           val dimensions=dimensionstr.split(",")
            if(dimensions.size==1){
              client.hdel(key,outTime)
              result=dimensions.head

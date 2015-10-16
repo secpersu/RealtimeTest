@@ -10,8 +10,8 @@ object MaxTest {
   def main(args: Array[String]) {
 
 //    println("330.0,331.0".split(",").head.asInstanceOf)
-    val testObj= new ResultManager("xx")
-    testObj.rangTime=7776000
+    val testObj= new ResultManager("xx",7776000l)
+//    testObj.rangTime=7776000
     testObj.computeType="max"
     testObj.inputEndtime=1444704884576l
     testObj.addResultMax(1444704884576l,300.0f)

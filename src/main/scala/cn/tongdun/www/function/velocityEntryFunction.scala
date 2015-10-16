@@ -141,8 +141,8 @@ object velocityEntryFunction {
       val timeRange=rules(3)
 
 
-      val resultManager = nowvalue.getOrElse(new ResultManager(groupbyKey))
-      resultManager.setRangTime(timeRange.toLong)
+      val resultManager = nowvalue.getOrElse(new ResultManager(groupbyKey,timeRange.toLong))
+//      resultManager.setRangTime(timeRange.toLong)
       resultManager.computeType=computeType
       resultManager.addResult(computeType,newValues)
       resultManager.substractResult(computeType)

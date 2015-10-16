@@ -11,49 +11,57 @@ import scala.collection.mutable.HashMap
  */
 
 
-class ResultManager(key:String) extends Serializable{
+class ResultManager(key:String,rangTime:Long) extends Serializable{
 
   private val resultDistinctCountAssist=new ResultAssistDistinctCount()
 //  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountResultStringManager()
-  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountManager(key)
+//  private val intervalDistinctCountResultStringManager=new IntervalDistinctCountManager(key)
+  private val intervalDistinctCountResultStringManager=new TimeSliceDistinctManager(key+",distinct",rangTime)
+
 
 
   //
 //  private val intervalSumResultManager=new IntervalSumResultManager()
-  private val intervalSumResultManager=new IntervalSumManager(key)
+//  private val intervalSumResultManager=new IntervalSumManager(key)
+  private val intervalSumResultManager=new TimeSliceSumManager(key+",sum",rangTime)
   private val computeResultAssistSum=new ComputeResultAssistSum()
 
   //
 //  private val intervalCountResultManager = new IntervalCountResultManager()
-  private val intervalCountResultManager = new IntervalCountManager(key)
+//  private val intervalCountResultManager = new IntervalCountManager(key)
+  private val intervalCountResultManager = new TimeSliceCountManager(key+",count",rangTime)
   private val computeResultAssistCount=new ComputeResultAssistCount()
 
 
   //最小值
 //  private val intervalMinResultManager = new IntervalMinResultManager()
-  private val intervalMinResultManager = new IntervalMinManager(key)
+//  private val intervalMinResultManager = new IntervalMinManager(key)
+  private val intervalMinResultManager = new TimeSliceMinManager(key+",min",rangTime)
   private val computeResultAssistMin=new ComputeResultAssistMin()
 
   // 中位数
 //  private val intervalMedianFloatManager = new IntervalMedianManager()
-  private val intervalMedianFloatManager = new IntervalMedianManager(key)
+//  private val intervalMedianFloatManager = new IntervalMedianManager(key)
+  private val intervalMedianFloatManager = new TimeSliceMedianManager(key+",median",rangTime)
   private val computeResultAssistMedian = new ComputeResultAssistMedian()
 
   //均值
 //  private val intervalStdFloatManager= new IntervalStdFloatManager()
-  private val intervalStdFloatManager=new IntervalStdManager(key)
+//  private val intervalStdFloatManager=new IntervalStdManager(key)
+  private val intervalStdFloatManager=new TimeSliceStdManager(key+",std",rangTime)
   private val computeResultAssistStd = new ComputeResultAssistStd()
 
   //最大值
 //  private val intervalMaxResultManager=new IntervalMaxResultManager()
-  private val intervalMaxResultManager=new IntervalMaxManager(key)
+//  private val intervalMaxResultManager=new IntervalMaxManager(key)
+  private val intervalMaxResultManager=new TimeSliceMaxManager(key+",max",rangTime)
   private val computeResultAssistMax=new ComputeResultAssistMax()
 
 //  private val timeQueue=new mutable.Queue[Long]
-  private val timeQueue=new TimeQueueManager(key)
+  private val timeQueue=new TimeQueueManager(key,rangTime)
 
 
-  var rangTime:Long=0
+//  var rangTime:Long=0
   var computeType:String=null
 
   //
@@ -62,11 +70,11 @@ class ResultManager(key:String) extends Serializable{
   var computeTime:Long=0
 
 
-  def setRangTime(rangTimes:Long): Unit ={
-    rangTime=rangTimes
-    timeQueue.timeRange=rangTimes
-
-  }
+//  def setRangTime(rangTimes:Long): Unit ={
+//    rangTime=rangTimes
+//    timeQueue.timeRange=rangTimes
+//
+//  }
 
 
 
