@@ -8,14 +8,14 @@ import cn.tongdun.www.redis.RedisConnector._
 /**
  * Created by wangqiaoshi on 15/10/13.
  */
-class TimeQueueManager(key:String,timeRange:Long) {
+class TimeQueueManager(key:String,timeRange:Long,nowTime:Long) {
 
 
   var redisKey=key+",timeQueue"
 
 //  var timeRange=0l
   var timeUnit=0
-  var lastTime=0l
+  var lastTime=nowTime
   val timeQueue=new mutable.Queue[Long]()
   var size=0
 
@@ -61,15 +61,17 @@ class TimeQueueManager(key:String,timeRange:Long) {
 
   def front():Long={
 
+    var reslut=0l
       clients.withClient{client=>
         client.lindex(redisKey,0) match{
           case None=>
-            timeQueue.front
+            reslut=timeQueue.front
 
           case Some(timeFront)=>
-            timeFront.toLong
+            reslut=timeFront.toLong
         }
       }
+    reslut
 
   }
 
@@ -78,9 +80,10 @@ class TimeQueueManager(key:String,timeRange:Long) {
   //返回true,redis
   private def checkEnqueue(currTime:Long): Boolean ={
     var result:Boolean=false
-    if(lastTime!=0&&(currTime-lastTime)>=timeUnit)
-      result=true
-    lastTime=currTime
+    if(lastTime!=0&&(currTime-lastTime)/1000>=timeUnit) {
+      result = true
+      lastTime = currTime
+    }
     result
   }
   private def checkDequeue(outTime:Long): Boolean ={
@@ -103,7 +106,7 @@ class TimeQueueManager(key:String,timeRange:Long) {
 object TimeQueueManager{
 
   def main(args: Array[String]) {
-    val timeQueue = new TimeQueueManager("redis",604800l)
+    val timeQueue = new TimeQueueManager("redis",604800l,120l)
 //    timeQueue.setTimeRange(604800l)
     timeQueue.enqueue(123l)
     timeQueue.enqueue(129l)

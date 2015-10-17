@@ -1,10 +1,11 @@
 package cn.tongdun.www.metric.impl
 
 import cn.tongdun.www.metric.{TimeSlice, IntervalResultManager, AbstractIntervalResultManager, IntervalHashMapManager}
-import cn.tongdun.www.service.TimeQueueManager
+import cn.tongdun.www.service.{ResultManager, TimeQueueManager}
 
 import scala.collection.mutable
 import scala.collection.mutable.{HashMap, Map}
+import scala.util.Random
 
 
 /**
@@ -86,7 +87,7 @@ class IntervalStdManager(keys:String) extends  Serializable with IntervalHashMap
 class IntervalRedisManager[T](keys:String) extends  Serializable with IntervalResultManager[T]{
   key=keys
 }
-abstract class  TimeSliceManager[T](key:String,rangTime:Long) extends TimeSlice[T](rangTime)   with Serializable  {
+abstract class  TimeSliceManager[T](key:String,rangTime:Long,nowTime:Long) extends TimeSlice[T](rangTime,nowTime)   with Serializable  {
 
 
 
@@ -119,7 +120,7 @@ abstract class  TimeSliceManager[T](key:String,rangTime:Long) extends TimeSlice[
 
 }
 
-class  TimeSliceSumManager(key:String,rangTime:Long) extends TimeSliceManager[Float](key,rangTime){
+class  TimeSliceSumManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceManager[Float](key,rangTime,nowTime){
 
 
 
@@ -136,7 +137,7 @@ class  TimeSliceSumManager(key:String,rangTime:Long) extends TimeSliceManager[Fl
 
 }
 
-class TimeSliceCountManager(key:String,rangTime:Long) extends TimeSliceManager[Int](key,rangTime){
+class TimeSliceCountManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceManager[Int](key,rangTime,nowTime){
 
 
   def  mergeTimeSlice():(Long,Int)={
@@ -153,7 +154,7 @@ class TimeSliceCountManager(key:String,rangTime:Long) extends TimeSliceManager[I
 }
 
 
-class TimeSliceMaxManager(key:String,rangTime:Long) extends  TimeSliceHashManager(key,rangTime){
+class TimeSliceMaxManager(key:String,rangTime:Long,nowTime:Long) extends  TimeSliceHashManager(key,rangTime,nowTime:Long){
 
   def  mergeTimeSlice():(Long,HashMap[String, Int])={
 
@@ -190,7 +191,7 @@ class TimeSliceMaxManager(key:String,rangTime:Long) extends  TimeSliceHashManage
 }
 
 
-class TimeSliceMinManager(key:String,rangTime:Long) extends TimeSliceHashManager(key,rangTime){
+class TimeSliceMinManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceHashManager(key,rangTime,nowTime:Long){
 
 //  def addIntervalResult(currTime:Long,dimension:Float): Unit ={
 //    if(check(currTime,addOp)){//先合并，在reids中增加
@@ -243,7 +244,7 @@ class IntervalRedisHashManager(keys:String) extends  Serializable with IntervalH
   key=keys
 }
 
-abstract class  TimeSliceHashManager(key:String,rangTime:Long) extends TimeSlice[mutable.Map[String,Int]](rangTime)   with Serializable  {
+abstract class  TimeSliceHashManager(key:String,rangTime:Long,nowTime:Long) extends TimeSlice[mutable.Map[String,Int]](rangTime,nowTime)   with Serializable  {
 
 
 
@@ -276,7 +277,7 @@ abstract class  TimeSliceHashManager(key:String,rangTime:Long) extends TimeSlice
 
 }
 
-class TimeSliceDistinctManager(key:String,rangTime:Long) extends TimeSliceHashManager(key,rangTime){
+class TimeSliceDistinctManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceHashManager(key,rangTime,nowTime:Long){
 
   def  mergeTimeSlice():(Long,HashMap[String,Int])= {
 
@@ -314,7 +315,7 @@ class TimeSliceDistinctManager(key:String,rangTime:Long) extends TimeSliceHashMa
 }
 
 
-class TimeSliceStdManager(key:String,rangTime:Long) extends TimeSliceHashManager(key,rangTime){
+class TimeSliceStdManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceHashManager(key,rangTime,nowTime){
 
   def  mergeTimeSlice():(Long,HashMap[String,Int])= {
 
@@ -351,7 +352,7 @@ class TimeSliceStdManager(key:String,rangTime:Long) extends TimeSliceHashManager
 
 }
 
-class TimeSliceMedianManager(key:String,rangTime:Long) extends TimeSliceHashManager(key,rangTime){
+class TimeSliceMedianManager(key:String,rangTime:Long,nowTime:Long) extends TimeSliceHashManager(key,rangTime,nowTime){
 
   def  mergeTimeSlice():(Long,HashMap[String,Int])= {
 
@@ -394,32 +395,30 @@ class TimeSliceMedianManager(key:String,rangTime:Long) extends TimeSliceHashMana
 
 
 object Test{
+
+
+
+  def makeData(): (Long,Float) ={
+    val time=System.currentTimeMillis()
+    val value=Random.nextFloat()
+    (time,value)
+  }
   def main(args: Array[String]) {
 
 
-//
-    val why = new TimeSliceMinManager("why,min",86400l)
-    val timeQueue=new TimeQueueManager("why",86400l)
-    val computeResultAssistMin=new ComputeResultAssistMin()
-
-//
-    timeQueue.enqueue(123l)
-    why.addIntervalResult(123l,mutable.Map("123"->1))
-    computeResultAssistMin.addAssist(123f)
-
-    timeQueue.enqueue(123l)
-    why.addIntervalResult(123l,mutable.Map("123"->1))
-    computeResultAssistMin.addAssist(123f)
-
-    timeQueue.enqueue(86400123l)
-    why.addIntervalResult(86400123l,mutable.Map("123"->1))
-    computeResultAssistMin.addAssist(123f)
-
-    val outMax=why.subtractIntervalResult(timeQueue.front)
-    computeResultAssistMin.substractAssist(outMax)
-    timeQueue.dequeue()
-
-
+    var xx=makeData()
+    var index=0
+    val manager = new ResultManager("test",1l,xx._1)
+    while(true) {
+      if(index>0)
+      xx=makeData()
+      manager.addResultMax(xx._1,xx._2)
+      manager.inputEndtime=xx._1
+      manager.substractResult("max")
+      println("---"+xx._1+"-----"+xx._2+"---"+manager.computeResult("max"))
+      index=index+1
+      Thread.sleep(20)
+    }
 //    why.addIntervalResult(125l,123f)
 //    why.addIntervalResult(86400123l,124f)
 //    why.addIntervalResult(86400124l,124f)

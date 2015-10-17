@@ -8,12 +8,12 @@ import scala.collection.mutable
  */
 
 
-abstract class TimeSlice[T](timeRange:Long)  extends AbstractIntervalResultManager[T]{
+abstract class TimeSlice[T](timeRange:Long,nowTime:Long)  extends AbstractIntervalResultManager[T]{
 
 
 
   var timeUnit=0
-  var lastTime=0l
+  var lastTime=nowTime
 
 
     timeUnit={
@@ -31,9 +31,10 @@ abstract class TimeSlice[T](timeRange:Long)  extends AbstractIntervalResultManag
   //返回true,redis
   private def checkAdd(currTime:Long): Boolean ={
     var result:Boolean=false
-    if(lastTime!=0&&(currTime-lastTime)>=timeUnit)
-      result=true
-    lastTime=currTime
+    if(lastTime!=0&&(currTime-lastTime)/1000>=timeUnit) {
+      result = true
+      lastTime = currTime
+    }
     result
   }
   private def checkSubstract(outTime:Long): Boolean ={
